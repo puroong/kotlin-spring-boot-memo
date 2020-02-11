@@ -1,19 +1,18 @@
-package com.urssu.bum.incubating.service
+package com.urssu.bum.incubating.security
 
-import com.urssu.bum.incubating.model.repository.UserRepository
+import com.urssu.bum.incubating.repository.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
 import org.springframework.stereotype.Service
 
 @Service
-class MyUserDeatilsService @Autowired constructor(
+class CustomUserDeatilsService @Autowired constructor(
         private var userRepository: UserRepository
 ) : UserDetailsService {
     override fun loadUserByUsername(username: String): UserDetails {
         // TODO: user(entity)랑 user(userDetails) 분리하기
-        val user = userRepository.findByUsername(username)
-        return user.toUserDetails()
+        val userModel = userRepository.findByUsername(username)
+        return userModel.toUserDetails()
     }
 }

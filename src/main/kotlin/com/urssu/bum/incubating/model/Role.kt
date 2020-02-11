@@ -1,4 +1,4 @@
-package com.urssu.bum.incubating.model.entity
+package com.urssu.bum.incubating.model
 
 import org.springframework.security.core.GrantedAuthority
 import javax.persistence.*

@@ -1,13 +1,12 @@
 package com.urssu.bum.incubating.service
 
-import com.urssu.bum.incubating.error.InvalidUserDataError
-import com.urssu.bum.incubating.error.UserAlreadyExistError
-import com.urssu.bum.incubating.model.dto.Roles
-import com.urssu.bum.incubating.model.dto.auth.SigninUserDTO.SigninUserDTO
-import com.urssu.bum.incubating.model.dto.auth.SignupUserDTO
-import com.urssu.bum.incubating.model.entity.User
-import com.urssu.bum.incubating.model.repository.UserRepository
-import com.urssu.bum.incubating.util.JwtUtil
+import com.urssu.bum.incubating.exception.InvalidUserDataException
+import com.urssu.bum.incubating.exception.UserAlreadyExistException
+import com.urssu.bum.incubating.dto.RoleTypes
+import com.urssu.bum.incubating.dto.model.user.UserCredentialDto
+import com.urssu.bum.incubating.model.User
+import com.urssu.bum.incubating.repository.UserRepository
+import com.urssu.bum.incubating.security.util.JwtUtil
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
@@ -24,32 +23,33 @@ class AuthService @Autowired constructor(
         private var userDetailsService: UserDetailsService,
         private var jwtTokenUtil: JwtUtil
 ) {
-    fun signup(signupUserDTO: SignupUserDTO) {
-        val userExists = userRepository.existsByUsername(signupUserDTO.username)
-        if(userExists) throw UserAlreadyExistError()
+    fun signupNewUser(userCredentialDto: UserCredentialDto) {
+        val userExists = userRepository.existsByUsername(userCredentialDto.username)
+        if(userExists) throw UserAlreadyExistException()
 
-        val newUser = User(
-                username = signupUserDTO.username,
-                password = passwordEncoder.encode(signupUserDTO.password),
-                role = Roles.USER
+        val newUserModel = User(
+                username = userCredentialDto.username,
+                password = passwordEncoder.encode(userCredentialDto.password),
+                role = RoleTypes.USER
         )
-        userRepository.save(newUser)
+        userRepository.save(newUserModel)
     }
 
-    fun signinAndCreateJwt(signinUserDTO: SigninUserDTO): String {
+    fun authenticateAndCreateJwt(userCredentialDto: UserCredentialDto): String {
         try {
+            // TODO: 인증을 어떻게 하는지 잘 모르겠음. 잘못된 정보 전달 시 내가 예외처리 할 수 있는 방법
             authenticationManager.authenticate(
                     UsernamePasswordAuthenticationToken(
-                            signinUserDTO.username,
-                            signinUserDTO.password
+                            userCredentialDto.username,
+                            userCredentialDto.password
                     )
             )
         } catch(e: BadCredentialsException) {
-            throw InvalidUserDataError()
+            throw InvalidUserDataException()
         }
 
         val userDetails = userDetailsService
-                .loadUserByUsername(signinUserDTO.username)
+                .loadUserByUsername(userCredentialDto.username)
         val jwt = jwtTokenUtil.generateToken(userDetails)
 
         return jwt

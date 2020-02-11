@@ -1,9 +1,9 @@
-package com.urssu.bum.incubating.model.dto
+package com.urssu.bum.incubating.dto
 
-import com.urssu.bum.incubating.model.repository.RoleRepository
+import com.urssu.bum.incubating.repository.RoleRepository
 import org.springframework.beans.factory.annotation.Autowired
 
-object Roles {
+object RoleTypes {
     @Autowired
     private lateinit var roleRepository: RoleRepository
 

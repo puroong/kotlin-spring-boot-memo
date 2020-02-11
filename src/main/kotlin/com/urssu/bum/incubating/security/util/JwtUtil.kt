@@ -1,5 +1,6 @@
-package com.urssu.bum.incubating.util
+package com.urssu.bum.incubating.security.util
 
+import com.urssu.bum.incubating.security.SecurityConstants
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
@@ -10,10 +11,6 @@ import kotlin.collections.HashMap
 
 @Component
 class JwtUtil {
-    // TODO: 환경변수로 빼기
-    private val tokenValidMilliseconds = 1000L * 60 * 60
-    private val SECRET_KEY = "secret"
-
     fun extractUsername(token: String): String {
         return extractClaim(token, Claims::getSubject)
     }
@@ -28,7 +25,7 @@ class JwtUtil {
     }
 
     private fun extractAllClaims(token: String): Claims {
-        return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).body
+        return Jwts.parser().setSigningKey(SecurityConstants.SECRET).parseClaimsJws(token).body
     }
 
     private fun isTokenExpired(token: String): Boolean {
@@ -42,8 +39,8 @@ class JwtUtil {
 
     private fun createToekn(claims: Map<String, Any>, subject: String): String {
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(Date(System.currentTimeMillis()))
-                .setExpiration(Date(System.currentTimeMillis() + tokenValidMilliseconds))
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact()
+                .setExpiration(Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
+                .signWith(SignatureAlgorithm.HS256, SecurityConstants.SECRET).compact()
     }
 
     fun validateToken(token: String, userDetails: UserDetails): Boolean {

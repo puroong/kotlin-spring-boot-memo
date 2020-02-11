@@ -1,8 +1,7 @@
 package com.urssu.bum.incubating.controller
 
-import com.urssu.bum.incubating.model.dto.request.SigninRequestDTO
-import com.urssu.bum.incubating.model.dto.request.SignupRequestDTO
-import com.urssu.bum.incubating.model.dto.response.SigninResponseDTO
+import com.urssu.bum.incubating.dto.model.user.UserCredentialDto
+import com.urssu.bum.incubating.dto.response.SigninResponseDto
 import com.urssu.bum.incubating.service.AuthService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -16,12 +15,12 @@ class AuthController @Autowired constructor(
 ){
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
-    fun signup(@Valid @RequestBody signupRequestDTO: SignupRequestDTO) = authService.signup(signupRequestDTO.toSignupUserDTO())
+    fun signup(@Valid @RequestBody userCredentialDto: UserCredentialDto) = authService.signupNewUser(userCredentialDto)
 
     @PostMapping("/signin")
     @ResponseStatus(HttpStatus.OK)
-    fun signin(@Valid @RequestBody signinRequestDTO: SigninRequestDTO): SigninResponseDTO {
-        val jwt = authService.signinAndCreateJwt(signinRequestDTO.toSigninUserDTO())
-        return SigninResponseDTO(jwt)
+    fun signin(@Valid @RequestBody userCredentialDto: UserCredentialDto): SigninResponseDto {
+        val jwt = authService.authenticateAndCreateJwt(userCredentialDto)
+        return SigninResponseDto(jwt)
     }
 }

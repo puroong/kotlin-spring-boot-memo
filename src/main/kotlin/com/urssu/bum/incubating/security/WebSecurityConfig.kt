@@ -1,7 +1,6 @@
-package com.urssu.bum.incubating.config
+package com.urssu.bum.incubating.security
 
-import com.urssu.bum.incubating.filter.JwtRequestFilter
-import com.urssu.bum.incubating.service.MyUserDeatilsService
+import com.urssu.bum.incubating.security.api.ApiJwtRequestFilter
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.security.authentication.AuthenticationManager
@@ -10,18 +9,18 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.config.http.SessionCreationPolicy
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 @EnableWebSecurity
 class WebSecurityConfig @Autowired constructor(
-        private var myUserDetailsService: MyUserDeatilsService,
-        private val jwtRequestFilter: JwtRequestFilter
+        private var myUserDetailsService: CustomUserDeatilsService,
+        private var jwtRequestFilter: ApiJwtRequestFilter,
+        private var passwordEncoder: PasswordEncoder
 ) : WebSecurityConfigurerAdapter() {
     override fun configure(auth: AuthenticationManagerBuilder) {
         auth.userDetailsService(myUserDetailsService)
-                .passwordEncoder(passwordEncoder())
+                .passwordEncoder(passwordEncoder)
     }
 
     override fun configure(http: HttpSecurity) {
@@ -41,10 +40,5 @@ class WebSecurityConfig @Autowired constructor(
     @Bean
     override fun authenticationManagerBean(): AuthenticationManager {
         return super.authenticationManagerBean()
-    }
-
-    @Bean
-    fun passwordEncoder(): PasswordEncoder {
-        return BCryptPasswordEncoder()
     }
 }

@@ -1,6 +1,6 @@
-package com.urssu.bum.incubating.model.repository
+package com.urssu.bum.incubating.repository
 
-import com.urssu.bum.incubating.model.entity.User
+import com.urssu.bum.incubating.model.User
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
