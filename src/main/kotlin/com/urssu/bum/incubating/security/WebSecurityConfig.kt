@@ -32,7 +32,7 @@ class WebSecurityConfig @Autowired constructor(
                     .authorizeRequests()
                     .antMatchers("/*/signin").permitAll()
                     .antMatchers("/*/signup").permitAll()
-                    .anyRequest().authenticated()
+                    .anyRequest().permitAll()
         http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter::class.java)
 
     }
