@@ -10,6 +10,7 @@ import kotlin.collections.HashMap
 
 @Component
 class JwtUtil {
+    // TODO: 환경변수로 빼기
     private val tokenValidMilliseconds = 1000L * 60 * 60
     private val SECRET_KEY = "secret"
 
@@ -45,7 +46,7 @@ class JwtUtil {
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY).compact()
     }
 
-    private fun validateToken(token: String, userDetails: UserDetails): Boolean {
+    fun validateToken(token: String, userDetails: UserDetails): Boolean {
         val username = extractUsername(token)
         return (username.equals(userDetails.username) && !isTokenExpired(token))
     }

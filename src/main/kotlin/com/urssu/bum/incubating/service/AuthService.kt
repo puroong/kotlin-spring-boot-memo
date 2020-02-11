@@ -2,6 +2,7 @@ package com.urssu.bum.incubating.service
 
 import com.urssu.bum.incubating.error.InvalidUserDataError
 import com.urssu.bum.incubating.error.UserAlreadyExistError
+import com.urssu.bum.incubating.model.dto.Roles
 import com.urssu.bum.incubating.model.dto.auth.SigninUserDTO.SigninUserDTO
 import com.urssu.bum.incubating.model.dto.auth.SignupUserDTO
 import com.urssu.bum.incubating.model.entity.User
@@ -29,7 +30,8 @@ class AuthService @Autowired constructor(
 
         val newUser = User(
                 username = signupUserDTO.username,
-                password = passwordEncoder.encode(signupUserDTO.password)
+                password = passwordEncoder.encode(signupUserDTO.password),
+                role = Roles.USER
         )
         userRepository.save(newUser)
     }
