@@ -1,5 +1,6 @@
 package com.urssu.bum.incubating.model
 
+import com.urssu.bum.incubating.dto.model.user.PermissionDto
 import org.springframework.security.core.GrantedAuthority
 import javax.persistence.*
 
@@ -11,5 +12,11 @@ class Permission(
 ) : GrantedAuthority {
     override fun getAuthority(): String {
         return name
+    }
+
+    fun toPermissionDto(): PermissionDto {
+        return PermissionDto(
+                name = name
+        )
     }
 }

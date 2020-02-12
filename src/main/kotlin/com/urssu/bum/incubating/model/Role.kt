@@ -1,5 +1,6 @@
 package com.urssu.bum.incubating.model
 
+import com.urssu.bum.incubating.dto.model.user.RoleDto
 import org.springframework.security.core.GrantedAuthority
 import javax.persistence.*
 
@@ -17,5 +18,11 @@ class Role(
 
     fun getPermissions(): Collection<GrantedAuthority> {
         return permissions
+    }
+
+    fun toRoleDto(): RoleDto {
+        return RoleDto(
+                name = name
+        )
     }
 }

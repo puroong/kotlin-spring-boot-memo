@@ -1,5 +1,6 @@
 package com.urssu.bum.incubating.model
 
+import com.urssu.bum.incubating.dto.model.user.UserDto
 import org.springframework.security.core.userdetails.User
 import javax.persistence.*
 
@@ -13,5 +14,12 @@ class User(
         ) {
     fun toUserDetails(): User {
         return User(username, password, role.getPermissions())
+    }
+
+    fun toUserDto(): UserDto {
+        return UserDto(
+                username = username,
+                role = role.toRoleDto()
+        )
     }
 }
