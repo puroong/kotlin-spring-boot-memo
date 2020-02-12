@@ -1,6 +1,8 @@
-package com.urssu.bum.incubating.controller
+package com.urssu.bum.incubating.controller.v1.api
 
-import com.urssu.bum.incubating.dto.model.user.UserCredentialDto
+import com.urssu.bum.incubating.controller.v1.request.UserSigninRequest
+import com.urssu.bum.incubating.controller.v1.request.UserSignupRequest
+import com.urssu.bum.incubating.dto.model.security.TokenDto
 import com.urssu.bum.incubating.dto.response.SigninResponseDto
 import com.urssu.bum.incubating.service.AuthService
 import io.swagger.annotations.ApiOperation
@@ -17,13 +19,11 @@ class AuthController @Autowired constructor(
     @ApiOperation("회원가입")
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
-    fun signup(@Valid @RequestBody userCredentialDto: UserCredentialDto) = authService.signupNewUser(userCredentialDto)
+    fun signup(@Valid @RequestBody userSignupRequest: UserSignupRequest) = authService.signupNewUser(userSignupRequest)
 
     @ApiOperation("로그인")
     @PostMapping("/signin")
     @ResponseStatus(HttpStatus.OK)
-    fun signin(@Valid @RequestBody userCredentialDto: UserCredentialDto): SigninResponseDto {
-        val jwt = authService.authenticateAndCreateJwt(userCredentialDto)
-        return SigninResponseDto(jwt)
-    }
+    fun signin(@Valid @RequestBody userSigninRequest: UserSigninRequest) = authService.authenticateAndCreateToken(userSigninRequest)
+                .map { SigninResponseDto(it) }
 }

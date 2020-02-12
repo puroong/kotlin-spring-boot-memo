@@ -1,6 +1,7 @@
 package com.urssu.bum.incubating.unit
 
-import com.urssu.bum.incubating.dto.model.user.UserCredentialDto
+import com.urssu.bum.incubating.controller.v1.request.UserSigninRequest
+import com.urssu.bum.incubating.controller.v1.request.UserSignupRequest
 import com.urssu.bum.incubating.util.TestUtil
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,7 +23,7 @@ class SignupTest {
 
     @Test
     fun `register new user`() {
-        val json = TestUtil.asJsonString(UserCredentialDto("name", "password"))
+        val json = TestUtil.asJsonString(UserSignupRequest("name", "password"))
 
         mvc.perform(post("/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -32,7 +33,7 @@ class SignupTest {
 
     @Test
     fun `conflict error due to duplicate user`() {
-        val json = TestUtil.asJsonString(UserCredentialDto("name", "password"))
+        val json = TestUtil.asJsonString(UserSigninRequest("name", "password"))
 
         mvc.perform(post("/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)

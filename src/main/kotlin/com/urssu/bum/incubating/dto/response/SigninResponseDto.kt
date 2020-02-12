@@ -1,5 +1,9 @@
 package com.urssu.bum.incubating.dto.response
 
+import com.urssu.bum.incubating.dto.model.security.TokenDto
+
 class SigninResponseDto(
-        val jwt: String
-)
+        val token: String
+) {
+    constructor(tokenDto: TokenDto) : this(tokenDto.token)
+}

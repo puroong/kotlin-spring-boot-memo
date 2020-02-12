@@ -6,7 +6,7 @@ import javax.persistence.*
 @Entity
 @Table(name="roles")
 class Role(
-        @Id @GeneratedValue val id: Long,
+        @Id @GeneratedValue val id: Long? = null,
         @Column(unique = true, nullable = false)val name: String,
         // TODO: Lazy가 안되는 이유
         @OneToMany(fetch = FetchType.EAGER) val permissions: List<Permission> = ArrayList()
