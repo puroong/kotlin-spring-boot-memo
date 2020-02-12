@@ -2,6 +2,7 @@ package com.urssu.bum.incubating.repository
 
 import com.urssu.bum.incubating.model.Memo
 import com.urssu.bum.incubating.model.User
+import com.urssu.bum.incubating.model.flag.MemoStatus
 import com.urssu.bum.incubating.repository.pageable.MemoOffsetBasedPageRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
@@ -23,25 +24,29 @@ class MemoRxRepositoryImpl @Autowired constructor(
                 .subscribeOn(Schedulers.elastic())
     }
 
-    override fun findAllByOwnerOrderByCreatedAtDesc(user: User): Flux<Memo> {
-        return Mono.fromCallable { memoRepository.findAllByOwnerOrderByCreatedAtDesc(user) }
+    override fun findAllByOwnerAndStatusOrderByCreatedAtDesc(user: User, status: MemoStatus): Flux<Memo> {
+        return Mono.fromCallable { memoRepository.findAllByOwnerAndStatusOrderByCreatedAtDesc(user, status) }
+                .subscribeOn(Schedulers.elastic())
                 .flatMapMany { Flux.fromIterable(it) }
     }
 
-    override fun findAllByOwnerOrderByCreatedAtDesc(user: User, limit: Int, offset: Long): Flux<Memo> {
+    override fun findAllByOwnerAndStatusOrderByCreatedAtDesc(user: User, status: MemoStatus, limit: Int, offset: Long): Flux<Memo> {
         val pageable = MemoOffsetBasedPageRequest(limit, offset)
-        return Mono.fromCallable { memoRepository.findAllByOwnerOrderByCreatedAtDesc(user, pageable) }
+        return Mono.fromCallable { memoRepository.findAllByOwnerAndStatusOrderByCreatedAtDesc(user, status, pageable) }
+                .subscribeOn(Schedulers.elastic())
                 .flatMapMany { Flux.fromIterable(it) }
     }
 
-    override fun findAllByOwnerAndTagOrderByCreatedAtDesc(user: User, tag: String): Flux<Memo> {
-        return Mono.fromCallable { memoRepository.findAllByOwnerAndTagOrderByCreatedAtDesc(user, tag) }
+    override fun findAllByOwnerAndTagAndStatusOrderByCreatedAtDesc(user: User, tag: String, status: MemoStatus): Flux<Memo> {
+        return Mono.fromCallable { memoRepository.findAllByOwnerAndTagAndStatusOrderByCreatedAtDesc(user, tag, status) }
+                .subscribeOn(Schedulers.elastic())
                 .flatMapMany { Flux.fromIterable(it) }
     }
 
-    override fun findAllByOwnerAndTagOrderByCreatedAtDesc(user: User, tag: String, limit: Int, offset: Long): Flux<Memo> {
+    override fun findAllByOwnerAndTagAndStatusOrderByCreatedAtDesc(user: User, tag: String, status: MemoStatus, limit: Int, offset: Long): Flux<Memo> {
         val pageable = MemoOffsetBasedPageRequest(limit, offset)
-        return Mono.fromCallable { memoRepository.findAllByOwnerAndTagOrderByCreatedAtDesc(user, tag, pageable) }
+        return Mono.fromCallable { memoRepository.findAllByOwnerAndTagAndStatusOrderByCreatedAtDesc(user, tag, status, pageable) }
+                .subscribeOn(Schedulers.elastic())
                 .flatMapMany { Flux.fromIterable(it) }
     }
 }

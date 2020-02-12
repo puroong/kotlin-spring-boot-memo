@@ -1,9 +1,11 @@
 package com.urssu.bum.incubating.model
 
 import com.urssu.bum.incubating.dto.model.memo.MemoDto
+import com.urssu.bum.incubating.model.flag.MemoStatus
 import java.util.*
 import javax.persistence.*
 
+// TODO: 삭제나 업데이트 할 때 cascade 옵션 따져보기
 @Entity
 @Table(name = "memos")
 class Memo(
@@ -13,7 +15,8 @@ class Memo(
         val createdAt: Date = Date(System.currentTimeMillis()),
         var isPublic: Boolean = true,
         var tag: String? = null,
-        @ManyToOne val owner: User
+        @ManyToOne val owner: User,
+        @Enumerated(EnumType.STRING) var status: MemoStatus = MemoStatus.PUBLIC
 ) {
     fun toMemoDto(): MemoDto {
         return MemoDto(
