@@ -18,6 +18,11 @@ class MemoRxRepositoryImpl @Autowired constructor(
                 .subscribeOn(Schedulers.elastic())
     }
 
+    override fun getOne(memoId: Long): Mono<Memo> {
+        return Mono.fromCallable { memoRepository.getOne(memoId) }
+                .subscribeOn(Schedulers.elastic())
+    }
+
     override fun findAllByOwnerOrderByCreatedAtDesc(user: User): Flux<Memo> {
         return Mono.fromCallable { memoRepository.findAllByOwnerOrderByCreatedAtDesc(user) }
                 .flatMapMany { Flux.fromIterable(it) }

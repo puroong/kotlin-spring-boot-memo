@@ -1,6 +1,7 @@
 package com.urssu.bum.incubating.service
 
 import com.urssu.bum.incubating.controller.v1.request.CreateMemoRequest
+import com.urssu.bum.incubating.controller.v1.request.UpdateMemoRequest
 import com.urssu.bum.incubating.dto.model.memo.MemoDto
 import com.urssu.bum.incubating.model.Memo
 import com.urssu.bum.incubating.repository.MemoRxRepository
@@ -75,5 +76,18 @@ class MemoService @Autowired constructor(
         return userRxRepository.findByUsername(username)
                 .flatMapMany { memoRxRepository.findAllByOwnerOrderByCreatedAtDesc(it, limit, offset) }
                 .map { it.toMemoDto() }
+    }
+
+    fun updateMemo(memoId: Long, updateMemoRequest: UpdateMemoRequest): Mono<Unit> {
+        return memoRxRepository.getOne(memoId)
+                .flatMap {
+                    // TODO: 깔끔하게 update하는 방법 찾기
+                    it.title = updateMemoRequest.title
+                    it.content = updateMemoRequest.content
+                    it.isPublic = updateMemoRequest.isPublic
+                    it.tag = updateMemoRequest.tag
+
+                    memoRxRepository.save(it)
+                }
     }
 }
