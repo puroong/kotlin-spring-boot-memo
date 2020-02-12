@@ -1,6 +1,6 @@
 package com.urssu.bum.incubating.security.service
 
-import com.urssu.bum.incubating.exception.MemoNotExistException
+import com.urssu.bum.incubating.exception.MemoNotFoundException
 import com.urssu.bum.incubating.repository.MemoRepository
 import com.urssu.bum.incubating.security.SecurityConstants
 import com.urssu.bum.incubating.security.util.JwtUtil
@@ -27,7 +27,7 @@ class PermissionService @Autowired constructor(
         try{
             memoOwnername = memoRepository.getOne(memoId).owner.username
         } catch (e: JpaObjectRetrievalFailureException) {
-            throw MemoNotExistException()
+            throw MemoNotFoundException()
         }
 
         return memoOwnername == usernameFromToken

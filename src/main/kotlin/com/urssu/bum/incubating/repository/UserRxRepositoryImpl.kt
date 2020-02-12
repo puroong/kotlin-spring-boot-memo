@@ -20,6 +20,11 @@ class UserRxRepositoryImpl @Autowired constructor(
                 .subscribeOn(Schedulers.elastic())
     }
 
+    override fun findByUsernameAndIsActive(username: String, isActive: Boolean): Mono<User> {
+        return Mono.fromCallable { userRepository.findByUsernameAndIsActive(username, isActive) }
+                .subscribeOn(Schedulers.elastic())
+    }
+
     override fun save(user: User): Mono<Unit> {
         return Mono.fromCallable { userRepository.save(user) }
                 .subscribeOn(Schedulers.elastic())

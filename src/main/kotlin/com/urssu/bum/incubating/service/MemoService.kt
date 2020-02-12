@@ -4,7 +4,7 @@ import com.urssu.bum.incubating.controller.v1.request.CreateMemoRequest
 import com.urssu.bum.incubating.controller.v1.request.UpdateMemoRequest
 import com.urssu.bum.incubating.dto.model.memo.MemoDto
 import com.urssu.bum.incubating.exception.MemoAlreadyDeletedException
-import com.urssu.bum.incubating.exception.MemoNotExistException
+import com.urssu.bum.incubating.exception.MemoNotFoundException
 import com.urssu.bum.incubating.model.Memo
 import com.urssu.bum.incubating.model.flag.MemoStatus
 import com.urssu.bum.incubating.repository.MemoRxRepository
@@ -131,7 +131,7 @@ class MemoService @Autowired constructor(
 
                     memoRxRepository.save(it)
                 }
-                .switchIfEmpty(Mono.error(MemoNotExistException()))
+                .switchIfEmpty(Mono.error(MemoNotFoundException()))
     }
 
     fun deleteMemo(memoId: Long): Mono<Unit> {
@@ -144,6 +144,6 @@ class MemoService @Autowired constructor(
 
                     memoRxRepository.save(it)
                 }
-                .switchIfEmpty(Mono.error(MemoNotExistException()))
+                .switchIfEmpty(Mono.error(MemoNotFoundException()))
     }
 }

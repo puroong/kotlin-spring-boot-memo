@@ -10,6 +10,7 @@ class User(
         @Id @GeneratedValue var id: Long? = null,
         @Column(unique = true, nullable = false) var username: String,
         @Column(nullable = false) var password: String,
+        @Column(nullable = false) var isActive: Boolean,
         @ManyToOne val role: Role
         ) {
     fun toUserDetails(): User {
@@ -19,6 +20,7 @@ class User(
     fun toUserDto(): UserDto {
         return UserDto(
                 username = username,
+                isActive = isActive,
                 role = role.toRoleDto()
         )
     }

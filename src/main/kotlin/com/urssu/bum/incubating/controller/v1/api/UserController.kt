@@ -18,4 +18,13 @@ class UserController @Autowired constructor(
     @PreAuthorize("hasAuthority('READ_ALL_USER') or hasAuthority('READ_MY_USER') and @permissionService.isMe(#username)")
     fun getUser(@RequestHeader(SecurityConstants.HEADER_STRING) authorization: String,
                 @PathVariable("username") username: String) = userService.getUser(username)
+
+    @ApiOperation("유저 탈퇴")
+    @DeleteMapping("/user/{username}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAuthority('DELETE_ALL_USER') or hasAuthority('DELETE_MY_USER') and @permissionService.isMe(#username)")
+    fun disableUser(@RequestHeader(SecurityConstants.HEADER_STRING) authorization: String,
+                    @PathVariable("username") username: String) = userService.disableUser(username)
+
+
 }

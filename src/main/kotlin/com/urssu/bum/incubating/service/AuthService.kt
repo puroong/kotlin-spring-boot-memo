@@ -37,6 +37,7 @@ class AuthService @Autowired constructor(
                             User(
                                     username = userSignupRequest.username,
                                     password = passwordEncoder.encode(userSignupRequest.password),
+                                    isActive = true,
                                     role = ROLE_USER
                             )
                     )
