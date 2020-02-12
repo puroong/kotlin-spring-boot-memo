@@ -6,5 +6,5 @@ import reactor.core.publisher.Mono
 interface UserRxRepository {
     fun existsByUsername(username: String): Mono<Boolean>
     fun findByUsername(username: String): Mono<User>
-    fun save(user: User): Mono<User>
+    fun save(user: User): Mono<Unit>
 }

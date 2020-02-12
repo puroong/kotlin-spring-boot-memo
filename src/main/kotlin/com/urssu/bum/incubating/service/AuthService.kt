@@ -29,7 +29,7 @@ class AuthService @Autowired constructor(
         private var jwtTokenUtil: JwtUtil,
         @Qualifier("USER") private var ROLE_USER: Role
 ) {
-    fun signupNewUser(userSignupRequest: UserSignupRequest): Mono<Void> {
+    fun signupNewUser(userSignupRequest: UserSignupRequest): Mono<Unit> {
         return userRxRepository.existsByUsername(userSignupRequest.username)
                 .flatMap  { userExist ->
                     if(userExist) throw UserAlreadyExistException()
@@ -41,7 +41,6 @@ class AuthService @Autowired constructor(
                             )
                     )
                 }
-                .then(Mono.empty())
     }
 
     fun authenticateAndCreateToken(userSigninRequest: UserSigninRequest): Mono<TokenDto> {
