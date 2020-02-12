@@ -32,4 +32,9 @@ class PermissionService @Autowired constructor(
 
         return memoOwnername == usernameFromToken
     }
+
+    // TOOD: 이름 좀 괜찮은걸로 바꾸기 + isMemoOwner랑 코드가 겹치는데 재사용할 방법 찾기
+    fun isMe(username: String): Boolean {
+        return SecurityContextHolder.getContext().authentication.name == username
+    }
 }
