@@ -2,6 +2,7 @@ package com.urssu.bum.incubating.controller.v1.api
 
 import com.urssu.bum.incubating.controller.v1.request.CreateMemoRequest
 import com.urssu.bum.incubating.controller.v1.request.UpdateMemoRequest
+import com.urssu.bum.incubating.dto.model.memo.MemoDto
 import com.urssu.bum.incubating.security.SecurityConstants
 import com.urssu.bum.incubating.service.MemoService
 import io.swagger.annotations.ApiOperation
@@ -22,8 +23,15 @@ class MemoController @Autowired constructor(
                    @PathVariable("username") username: String,
                    @RequestParam(value = "tag", required = false) tag: String?,
                    @RequestParam(value = "offset", required = false) offset: Long?,
-                   @RequestParam(value = "limit", required = false) limit: Int?) = memoService.getPublicMemos(username, tag, limit, offset)
+                   @RequestParam(value = "limit", required = false) limit: Int?) = memoService.getPublishedMemos(username, tag, limit, offset)
 
+    @ApiOperation("공개된 메모들 보기")
+    @GetMapping("/memos")
+    @ResponseStatus(HttpStatus.OK)
+    fun getPublicMemos(@RequestHeader(SecurityConstants.HEADER_STRING) authorization: String,
+                       @RequestParam(value = "tag", required = false) tag: String?,
+                       @RequestParam(value = "offset", required = false) offset: Long?,
+                       @RequestParam(value = "limit", required = false) limit: Int?) = memoService.getPublicMemos(tag, limit, offset)
     @ApiOperation("메모 작성")
     @PostMapping("/memo")
     @ResponseStatus(HttpStatus.CREATED)

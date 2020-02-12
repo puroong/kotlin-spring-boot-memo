@@ -16,7 +16,7 @@ class Memo(
         var isPublic: Boolean = true,
         var tag: String? = null,
         @ManyToOne val owner: User,
-        @Enumerated(EnumType.STRING) var status: MemoStatus = MemoStatus.PUBLIC
+        @Enumerated(EnumType.STRING) var status: MemoStatus = MemoStatus.PUBLISHED
 ) {
     fun toMemoDto(): MemoDto {
         return MemoDto(
