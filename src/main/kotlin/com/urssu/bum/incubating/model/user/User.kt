@@ -11,7 +11,7 @@ class User(
         @Column(unique = true, nullable = false) var username: String,
         @Column(nullable = false) var password: String,
         @Column(nullable = false) var isActive: Boolean,
-        @ManyToOne val role: Role
+        @ManyToOne var role: Role
         ) {
     fun toUserDetails(): User {
         return User(username, password, role.getPermissions())

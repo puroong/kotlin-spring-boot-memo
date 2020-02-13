@@ -1,8 +1,9 @@
 package com.urssu.bum.incubating.repository
 
-import com.urssu.bum.incubating.model.Memo
-import com.urssu.bum.incubating.model.User
-import com.urssu.bum.incubating.model.flag.MemoStatus
+import com.urssu.bum.incubating.exception.MemoNotFoundException
+import com.urssu.bum.incubating.model.memo.Memo
+import com.urssu.bum.incubating.model.user.User
+import com.urssu.bum.incubating.model.memo.MemoStatus
 import com.urssu.bum.incubating.repository.pageable.MemoOffsetBasedPageRequest
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
@@ -19,9 +20,17 @@ class MemoRxRepositoryImpl @Autowired constructor(
                 .subscribeOn(Schedulers.elastic())
     }
 
-    override fun getOne(memoId: Long): Mono<Memo> {
-        return Mono.fromCallable { memoRepository.getOne(memoId) }
+    override fun existsById(id: Long): Mono<Boolean> {
+        return Mono.fromCallable { memoRepository.existsById(id) }
                 .subscribeOn(Schedulers.elastic())
+    }
+
+    override fun getOne(memoId: Long): Mono<Memo> {
+        return existsById(memoId)
+                .map { memoExists ->
+                    if(memoExists) memoRepository.getOne(memoId)
+                    else throw MemoNotFoundException()
+                }
     }
 
     override fun findAllByOwnerAndStatusOrderByCreatedAtDesc(user: User, status: MemoStatus): Flux<Memo> {

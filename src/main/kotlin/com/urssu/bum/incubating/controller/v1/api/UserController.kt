@@ -1,5 +1,6 @@
 package com.urssu.bum.incubating.controller.v1.api
 
+import com.urssu.bum.incubating.controller.v1.request.UserRoleUpdateRequest
 import com.urssu.bum.incubating.security.SecurityConstants
 import com.urssu.bum.incubating.service.UserService
 import io.swagger.annotations.ApiOperation
@@ -26,5 +27,11 @@ class UserController @Autowired constructor(
     fun disableUser(@RequestHeader(SecurityConstants.HEADER_STRING) authorization: String,
                     @PathVariable("username") username: String) = userService.disableUser(username)
 
-
+    @ApiOperation("유정 권한 변경")
+    @PutMapping("/user/{username}/role")
+    @ResponseStatus(HttpStatus.OK)
+    @PreAuthorize("hasAuthority('MODIFY_ALL_USER')")
+    fun updateUserRole(@RequestHeader(SecurityConstants.HEADER_STRING) authorization: String,
+                       @PathVariable("username") username: String,
+                       @RequestBody userRoleUpdateRequest: UserRoleUpdateRequest) = userService.updateUserRole(username, userRoleUpdateRequest)
 }

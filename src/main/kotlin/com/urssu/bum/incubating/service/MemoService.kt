@@ -1,7 +1,7 @@
 package com.urssu.bum.incubating.service
 
-import com.urssu.bum.incubating.controller.v1.request.CreateMemoRequest
-import com.urssu.bum.incubating.controller.v1.request.UpdateMemoRequest
+import com.urssu.bum.incubating.controller.v1.request.MemoCreateRequest
+import com.urssu.bum.incubating.controller.v1.request.MemoUpdateRequest
 import com.urssu.bum.incubating.dto.model.memo.MemoDto
 import com.urssu.bum.incubating.exception.MemoAlreadyDeletedException
 import com.urssu.bum.incubating.exception.MemoNotFoundException
@@ -23,7 +23,7 @@ class MemoService @Autowired constructor(
         private var memoRxRepository: MemoRxRepository,
         private var userRxRepository: UserRxRepository
 ){
-    fun createMemo(createMemoRequest: CreateMemoRequest): Mono<Unit> {
+    fun createMemo(createMemoRequest: MemoCreateRequest): Mono<Unit> {
         val userDetails = SecurityContextHolder.getContext().authentication.principal as UserDetails
 
         return userRxRepository.findByUsername(userDetails.username)
@@ -120,7 +120,7 @@ class MemoService @Autowired constructor(
                 .map { it.toMemoDto() }
     }
 
-    fun updateMemo(memoId: Long, updateMemoRequest: UpdateMemoRequest): Mono<Unit> {
+    fun updateMemo(memoId: Long, updateMemoRequest: MemoUpdateRequest): Mono<Unit> {
         return memoRxRepository.getOne(memoId)
                 .flatMap {
                     // TODO: 깔끔하게 update하는 방법 찾기

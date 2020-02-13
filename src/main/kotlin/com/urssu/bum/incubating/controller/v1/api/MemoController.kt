@@ -1,8 +1,7 @@
 package com.urssu.bum.incubating.controller.v1.api
 
-import com.urssu.bum.incubating.controller.v1.request.CreateMemoRequest
-import com.urssu.bum.incubating.controller.v1.request.UpdateMemoRequest
-import com.urssu.bum.incubating.dto.model.memo.MemoDto
+import com.urssu.bum.incubating.controller.v1.request.MemoCreateRequest
+import com.urssu.bum.incubating.controller.v1.request.MemoUpdateRequest
 import com.urssu.bum.incubating.security.SecurityConstants
 import com.urssu.bum.incubating.service.MemoService
 import io.swagger.annotations.ApiOperation
@@ -37,7 +36,7 @@ class MemoController @Autowired constructor(
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAuthority('WRITE_MEMO')")
     fun createMemo(@RequestHeader(SecurityConstants.HEADER_STRING) authorization: String,
-                   @RequestBody createMemoRequest: CreateMemoRequest) = memoService.createMemo(createMemoRequest)
+                   @RequestBody createMemoRequest: MemoCreateRequest) = memoService.createMemo(createMemoRequest)
 
     @ApiOperation("메모 수정하기")
     @PutMapping("/memo/{memoId}")
@@ -45,7 +44,7 @@ class MemoController @Autowired constructor(
     @PreAuthorize("hasAuthority('MODIFY_ALL_MEMO') or hasAuthority('MODIFY_MY_MEMO') and @permissionService.isMemoOwner(#authorization, #memoId)")
     fun updateMemo(@RequestHeader(SecurityConstants.HEADER_STRING) authorization: String,
                    @PathVariable("memoId") memoId: Long,
-                   @RequestBody updateMemoRequest: UpdateMemoRequest) = memoService.updateMemo(memoId, updateMemoRequest)
+                   @RequestBody updateMemoRequest: MemoUpdateRequest) = memoService.updateMemo(memoId, updateMemoRequest)
 
     @ApiOperation("메모 삭제하기")
     @DeleteMapping("/memo/{memoId}")

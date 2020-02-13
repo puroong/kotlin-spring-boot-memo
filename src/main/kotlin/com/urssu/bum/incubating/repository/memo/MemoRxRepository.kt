@@ -1,15 +1,15 @@
 package com.urssu.bum.incubating.repository
 
-import com.urssu.bum.incubating.model.Memo
-import com.urssu.bum.incubating.model.User
-import com.urssu.bum.incubating.model.flag.MemoStatus
+import com.urssu.bum.incubating.model.memo.Memo
+import com.urssu.bum.incubating.model.user.User
+import com.urssu.bum.incubating.model.memo.MemoStatus
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
-import java.util.*
 
 interface MemoRxRepository {
     fun save(memo: Memo): Mono<Unit>
 
+    fun existsById(id: Long): Mono<Boolean>
     fun getOne(memoId: Long): Mono<Memo>
 
     fun findAllByOwnerAndStatusOrderByCreatedAtDesc(user: User, status: MemoStatus): Flux<Memo>

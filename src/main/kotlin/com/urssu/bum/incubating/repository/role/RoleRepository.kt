@@ -1,10 +1,10 @@
 package com.urssu.bum.incubating.repository
 
-import com.urssu.bum.incubating.model.Permission
+import com.urssu.bum.incubating.model.user.Role
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 
 @Repository
-interface PermissionRepository : JpaRepository<Permission, Long> {
-    fun findByName(name: String): Permission
+interface RoleRepository : JpaRepository<Role, String> {
+    fun findByName(name: String): Role
 }

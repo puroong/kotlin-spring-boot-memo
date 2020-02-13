@@ -1,6 +1,6 @@
 package com.urssu.bum.incubating.controller.v1.request
 
-class CreateMemoRequest(
+class MemoCreateRequest(
         val title: String,
         val content: String,
         val isPublic: Boolean,

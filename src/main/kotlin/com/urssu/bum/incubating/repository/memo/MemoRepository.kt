@@ -1,8 +1,8 @@
 package com.urssu.bum.incubating.repository
 
-import com.urssu.bum.incubating.model.Memo
-import com.urssu.bum.incubating.model.User
-import com.urssu.bum.incubating.model.flag.MemoStatus
+import com.urssu.bum.incubating.model.memo.Memo
+import com.urssu.bum.incubating.model.user.User
+import com.urssu.bum.incubating.model.memo.MemoStatus
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 
