@@ -1,5 +1,5 @@
 package com.urssu.bum.incubating.security
 
-object SecurityConstants {
+object SecurityConstant {
     const val HEADER_STRING = "Authorization"
 }

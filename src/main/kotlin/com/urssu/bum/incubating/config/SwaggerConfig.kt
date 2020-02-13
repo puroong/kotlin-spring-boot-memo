@@ -11,12 +11,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2
 
 @Configuration
 @EnableSwagger2
-class IncubatingConfig {
-    @Bean
-    fun passwordEncoder(): PasswordEncoder {
-        return BCryptPasswordEncoder()
-    }
-
+class SwaggerConfig {
     @Bean
     fun api(): Docket {
         return Docket(DocumentationType.SWAGGER_2).select()

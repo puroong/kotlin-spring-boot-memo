@@ -1,6 +1,6 @@
 package com.urssu.bum.incubating.exception
 
 import org.springframework.http.HttpStatus
-import org.springframework.web.server.ResponseStatusException
+import java.lang.RuntimeException
 
-open class ApiException(status: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR, message: String? = "Internal Server Error") : ResponseStatusException(status, message)
+open class ApiException(val status: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR, override val message: String = "Internal Server Error") : RuntimeException(message)

@@ -1,6 +1,5 @@
-package com.urssu.bum.incubating.model.flag
+package com.urssu.bum.incubating.model.memo
 
-// TODO: 이 파일 여기다 model에 두는게 맞는지 모르겠음
 enum class MemoStatus {
     PUBLISHED,
     DELETED

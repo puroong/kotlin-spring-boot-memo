@@ -1,6 +1,8 @@
 package com.urssu.bum.incubating.security
 
-import com.urssu.bum.incubating.security.api.ApiJwtRequestFilter
+import com.urssu.bum.incubating.security.filter.ExceptionHandlerFilter
+import com.urssu.bum.incubating.security.filter.JwtRequestFilter
+import com.urssu.bum.incubating.security.service.CustomUserDeatilsService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.security.authentication.AuthenticationManager
@@ -17,9 +19,10 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 class WebSecurityConfig @Autowired constructor(
-        private var myUserDetailsService: CustomUserDeatilsService,
-        private var jwtRequestFilter: ApiJwtRequestFilter,
-        private var passwordEncoder: PasswordEncoder
+        private val myUserDetailsService: CustomUserDeatilsService,
+        private val jwtRequestFilter: JwtRequestFilter,
+        private val exceptionHandlerFilter: ExceptionHandlerFilter,
+        private val passwordEncoder: PasswordEncoder
 ) : WebSecurityConfigurerAdapter() {
     override fun configure(auth: AuthenticationManagerBuilder) {
         auth.userDetailsService(myUserDetailsService)
@@ -32,12 +35,13 @@ class WebSecurityConfig @Autowired constructor(
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-                    .authorizeRequests()
-                    .antMatchers("/*/signin").permitAll()
-                    .antMatchers("/*/signup").permitAll()
-                    .anyRequest().authenticated()
-        http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter::class.java)
-
+                .authorizeRequests()
+                .antMatchers("/**/signin").permitAll()
+                .antMatchers("/**/signup").permitAll()
+                .anyRequest().authenticated()
+                .and()
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter::class.java)
+                .addFilterBefore(exceptionHandlerFilter, JwtRequestFilter::class.java)
     }
 
     override fun configure(web: WebSecurity) {

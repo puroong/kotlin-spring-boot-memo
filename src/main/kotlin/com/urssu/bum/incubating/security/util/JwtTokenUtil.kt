@@ -1,16 +1,19 @@
 package com.urssu.bum.incubating.security.util
 
-import com.urssu.bum.incubating.security.SecurityConstants
+import com.urssu.bum.incubating.security.SecurityProperty
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Component
 import java.util.*
 import kotlin.collections.HashMap
 
 @Component
-class JwtUtil {
+class JwtTokenUtil @Autowired constructor(
+        private val securityProperty: SecurityProperty
+) {
     fun extractUsername(token: String): String {
         return extractClaim(token, Claims::getSubject)
     }
@@ -25,7 +28,7 @@ class JwtUtil {
     }
 
     private fun extractAllClaims(token: String): Claims {
-        return Jwts.parser().setSigningKey(SecurityConstants.SECRET).parseClaimsJws(token).body
+        return Jwts.parser().setSigningKey(securityProperty.SECRET).parseClaimsJws(token).body
     }
 
     private fun isTokenExpired(token: String): Boolean {
@@ -34,13 +37,13 @@ class JwtUtil {
 
     fun generateToken(userDetails: UserDetails): String {
         val claims: Map<String, Any> = HashMap()
-        return createToekn(claims, userDetails.username)
+        return createToken(claims, userDetails.username)
     }
 
-    private fun createToekn(claims: Map<String, Any>, subject: String): String {
+    private fun createToken(claims: Map<String, Any>, subject: String): String {
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(Date(System.currentTimeMillis()))
-                .setExpiration(Date(System.currentTimeMillis() + SecurityConstants.EXPIRATION_TIME))
-                .signWith(SignatureAlgorithm.HS256, SecurityConstants.SECRET).compact()
+                .setExpiration(Date(System.currentTimeMillis() + securityProperty.EXPIRATION_TIME))
+                .signWith(SignatureAlgorithm.HS256, securityProperty.SECRET).compact()
     }
 
     fun validateToken(token: String, userDetails: UserDetails): Boolean {

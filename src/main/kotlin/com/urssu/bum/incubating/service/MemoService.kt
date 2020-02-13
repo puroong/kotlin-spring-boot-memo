@@ -1,14 +1,12 @@
 package com.urssu.bum.incubating.service
 
-import com.urssu.bum.incubating.controller.v1.request.MemoCreateRequest
-import com.urssu.bum.incubating.controller.v1.request.MemoUpdateRequest
-import com.urssu.bum.incubating.dto.model.memo.MemoDto
+import com.urssu.bum.incubating.dto.request.MemoCreateRequestDto
+import com.urssu.bum.incubating.dto.request.MemoUpdateRequestDto
 import com.urssu.bum.incubating.exception.MemoAlreadyDeletedException
-import com.urssu.bum.incubating.exception.MemoNotFoundException
-import com.urssu.bum.incubating.model.Memo
-import com.urssu.bum.incubating.model.flag.MemoStatus
-import com.urssu.bum.incubating.repository.MemoRxRepository
-import com.urssu.bum.incubating.repository.UserRxRepository
+import com.urssu.bum.incubating.model.memo.Memo
+import com.urssu.bum.incubating.model.memo.MemoStatus
+import com.urssu.bum.incubating.repository.memo.MemoRxRepository
+import com.urssu.bum.incubating.repository.user.UserRxRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.context.SecurityContextHolder
@@ -20,25 +18,26 @@ import reactor.core.publisher.Mono
 
 @Service
 class MemoService @Autowired constructor(
-        private var memoRxRepository: MemoRxRepository,
-        private var userRxRepository: UserRxRepository
+        private val memoRxRepository: MemoRxRepository,
+        private val userRxRepository: UserRxRepository
 ){
-    fun createMemo(createMemoRequest: MemoCreateRequest): Mono<Unit> {
+    fun createMemo(createMemoRequest: MemoCreateRequestDto): Mono<Unit> {
         val userDetails = SecurityContextHolder.getContext().authentication.principal as UserDetails
 
-        return userRxRepository.findByUsername(userDetails.username)
-                .flatMap { memoRxRepository.save(
-                        Memo(
-                                title = createMemoRequest.title,
-                                content = createMemoRequest.content,
-                                isPublic = createMemoRequest.isPublic,
-                                tag = createMemoRequest.tag,
-                                owner = it
-                        )
-                ) }
+        return userRxRepository.findByUsernameIfExist(userDetails.username)
+                .map {
+                    Memo(
+                            title = createMemoRequest.title,
+                            content = createMemoRequest.content,
+                            isPublic = createMemoRequest.isPublic,
+                            tag = createMemoRequest.tag,
+                            owner = it
+                    )
+                }
+                .flatMap(memoRxRepository::save)
     }
 
-    fun getPublicMemos(tag: String?, limit: Int?, offset: Long?): Flux<MemoDto> {
+    fun getPublicMemos(tag: String?, limit: Int?, offset: Long?): Flux<Memo> {
         /*
         경우의 수는 아래와 같음
 
@@ -57,27 +56,23 @@ class MemoService @Autowired constructor(
         else throw ResponseStatusException(HttpStatus.BAD_REQUEST)
     }
 
-    private fun getPublicMemos(): Flux<MemoDto> {
+    private fun getPublicMemos(): Flux<Memo> {
         return memoRxRepository.findAllByIsPublicAndStatusOrderByCreatedAtDesc(true, MemoStatus.PUBLISHED)
-                .map { it.toMemoDto() }
     }
 
-    private fun getPublicMemos(limit: Int, offset: Long): Flux<MemoDto> {
+    private fun getPublicMemos(limit: Int, offset: Long): Flux<Memo> {
         return memoRxRepository.findAllByIsPublicAndStatusOrderByCreatedAtDesc(true, MemoStatus.PUBLISHED, limit, offset)
-                .map { it.toMemoDto() }
     }
 
-    private fun getPublicMemos(tag: String): Flux<MemoDto> {
+    private fun getPublicMemos(tag: String): Flux<Memo> {
         return memoRxRepository.findAllByIsPublicAndStatusAndTagOrderByCreatedAtDesc(true, MemoStatus.PUBLISHED, tag)
-                .map { it.toMemoDto() }
     }
 
-    private fun getPublicMemos(tag: String, limit: Int, offset: Long): Flux<MemoDto> {
+    private fun getPublicMemos(tag: String, limit: Int, offset: Long): Flux<Memo> {
         return memoRxRepository.findAllByIsPublicAndStatusAndTagOrderByCreatedAtDesc(true, MemoStatus.PUBLISHED, tag, limit, offset)
-                .map { it.toMemoDto() }
     }
 
-    fun getPublishedMemos(username: String, tag: String?, limit: Int?, offset: Long?): Flux<MemoDto> {
+    fun getPublishedMemos(username: String, tag: String?, limit: Int?, offset: Long?): Flux<Memo> {
         /*
         경우의 수는 아래와 같음
 
@@ -96,54 +91,49 @@ class MemoService @Autowired constructor(
         else throw ResponseStatusException(HttpStatus.BAD_REQUEST)
     }
 
-    private fun getPublishedMemosByUsernameAndTag(username: String, tag: String): Flux<MemoDto> {
+    private fun getPublishedMemosByUsernameAndTag(username: String, tag: String): Flux<Memo> {
         return userRxRepository.findByUsername(username)
                 .flatMapMany { memoRxRepository.findAllByOwnerAndTagAndStatusOrderByCreatedAtDesc(it, tag, MemoStatus.PUBLISHED) }
-                .map { it.toMemoDto() }
     }
 
-    private fun getPublishedMemosByUsernameAndTag(username: String, tag: String, limit: Int, offset: Long): Flux<MemoDto> {
-        return userRxRepository.findByUsername(username)
+    private fun getPublishedMemosByUsernameAndTag(username: String, tag: String, limit: Int, offset: Long): Flux<Memo> {
+        return userRxRepository.findByUsernameIfExist(username)
                 .flatMapMany { memoRxRepository.findAllByOwnerAndTagAndStatusOrderByCreatedAtDesc(it, tag, MemoStatus.PUBLISHED, limit, offset) }
-                .map { it.toMemoDto() }
     }
 
-    private fun getPublishedMemosByUsername(username: String): Flux<MemoDto> {
-        return userRxRepository.findByUsername(username)
+    private fun getPublishedMemosByUsername(username: String): Flux<Memo> {
+        return userRxRepository.findByUsernameIfExist(username)
                 .flatMapMany { memoRxRepository.findAllByOwnerAndStatusOrderByCreatedAtDesc(it, MemoStatus.PUBLISHED) }
-                .map { it.toMemoDto() }
     }
 
-    private fun getPublishedMemosByUsername(username: String, limit: Int, offset: Long): Flux<MemoDto> {
-        return userRxRepository.findByUsername(username)
+    private fun getPublishedMemosByUsername(username: String, limit: Int, offset: Long): Flux<Memo> {
+        return userRxRepository.findByUsernameIfExist(username)
                 .flatMapMany { memoRxRepository.findAllByOwnerAndStatusOrderByCreatedAtDesc(it, MemoStatus.PUBLISHED, limit, offset) }
-                .map { it.toMemoDto() }
     }
 
-    fun updateMemo(memoId: Long, updateMemoRequest: MemoUpdateRequest): Mono<Unit> {
-        return memoRxRepository.getOne(memoId)
-                .flatMap {
-                    // TODO: 깔끔하게 update하는 방법 찾기
-                    it.title = updateMemoRequest.title
-                    it.content = updateMemoRequest.content
-                    it.isPublic = updateMemoRequest.isPublic
-                    it.tag = updateMemoRequest.tag
-
-                    memoRxRepository.save(it)
+    fun updateMemo(memoId: Long, updateMemoRequest: MemoUpdateRequestDto): Mono<Unit> {
+        return memoRxRepository.getOneIfExist(memoId)
+                .map {
+                    it.update(
+                            title = updateMemoRequest.title,
+                            content = updateMemoRequest.content,
+                            isPublic = updateMemoRequest.isPublic,
+                            tag = updateMemoRequest.tag
+                    )
+                    it
                 }
-                .switchIfEmpty(Mono.error(MemoNotFoundException()))
+                .flatMap(memoRxRepository::save)
     }
 
     fun deleteMemo(memoId: Long): Mono<Unit> {
-        return memoRxRepository.getOne(memoId)
-                .flatMap {
-                    if(it.status == MemoStatus.DELETED) throw MemoAlreadyDeletedException()
-
-                    // TODO: 깔끔하게 update하는 방법 찾기
-                    it.status = MemoStatus.DELETED
-
-                    memoRxRepository.save(it)
+        return memoRxRepository.getOneIfExist(memoId)
+                .map {
+                    if (it.status == MemoStatus.DELETED) throw MemoAlreadyDeletedException()
+                    it.update(
+                            status = MemoStatus.DELETED
+                    )
+                    it
                 }
-                .switchIfEmpty(Mono.error(MemoNotFoundException()))
+                .flatMap(memoRxRepository::save)
     }
 }

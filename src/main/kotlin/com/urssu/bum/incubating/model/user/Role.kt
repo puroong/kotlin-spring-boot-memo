@@ -1,16 +1,17 @@
-package com.urssu.bum.incubating.model
+package com.urssu.bum.incubating.model.user
 
 import com.urssu.bum.incubating.dto.model.user.RoleDto
+import org.hibernate.annotations.Cascade
+import org.hibernate.annotations.CascadeType
 import org.springframework.security.core.GrantedAuthority
 import javax.persistence.*
 
 @Entity
 @Table(name="roles")
 class Role(
-        @Id @GeneratedValue val id: Long? = null,
-        @Column(unique = true, nullable = false)val name: String,
-        // TODO: Lazy가 안되는 이유
-        @OneToMany(fetch = FetchType.EAGER) val permissions: List<Permission> = ArrayList()
+        @Id @GeneratedValue(strategy = GenerationType.IDENTITY) val id: Long? = null,
+        @Column(name = "name", unique = true, nullable = false)val name: String,
+        @ManyToMany(fetch = FetchType.EAGER) @Cascade(CascadeType.SAVE_UPDATE) val permissions: List<Permission> = ArrayList()
 ) : GrantedAuthority {
     override fun getAuthority(): String {
         return name

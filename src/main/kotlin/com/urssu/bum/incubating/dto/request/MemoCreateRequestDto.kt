@@ -1,6 +1,6 @@
-package com.urssu.bum.incubating.controller.v1.request
+package com.urssu.bum.incubating.dto.request
 
-class MemoUpdateRequest(
+class MemoCreateRequestDto(
         val title: String,
         val content: String,
         val isPublic: Boolean,

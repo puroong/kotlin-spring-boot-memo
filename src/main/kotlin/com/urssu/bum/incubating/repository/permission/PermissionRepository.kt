@@ -1,4 +1,4 @@
-package com.urssu.bum.incubating.repository
+package com.urssu.bum.incubating.repository.permission
 
 import com.urssu.bum.incubating.model.user.Permission
 import org.springframework.data.jpa.repository.JpaRepository

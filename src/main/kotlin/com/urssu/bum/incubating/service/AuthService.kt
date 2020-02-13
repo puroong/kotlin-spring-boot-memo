@@ -1,16 +1,15 @@
 package com.urssu.bum.incubating.service
 
-import com.urssu.bum.incubating.controller.v1.request.UserSigninRequest
-import com.urssu.bum.incubating.controller.v1.request.UserSignupRequest
+import com.urssu.bum.incubating.dto.request.UserSigninRequestDto
+import com.urssu.bum.incubating.dto.request.UserSignupRequestDto
 import com.urssu.bum.incubating.exception.InvalidUserDataException
 import com.urssu.bum.incubating.exception.UserAlreadyExistException
-import com.urssu.bum.incubating.dto.model.security.TokenDto
-import com.urssu.bum.incubating.model.Role
-import com.urssu.bum.incubating.model.User
-import com.urssu.bum.incubating.repository.UserRxRepository
-import com.urssu.bum.incubating.security.util.JwtUtil
+import com.urssu.bum.incubating.model.user.RoleType
+import com.urssu.bum.incubating.model.user.User
+import com.urssu.bum.incubating.repository.role.RoleRxRepository
+import com.urssu.bum.incubating.repository.user.UserRxRepository
+import com.urssu.bum.incubating.security.util.JwtTokenUtil
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.InternalAuthenticationServiceException
@@ -22,47 +21,50 @@ import reactor.core.publisher.Mono
 
 @Service
 class AuthService @Autowired constructor(
-        private var userRxRepository: UserRxRepository,
-        private var passwordEncoder: PasswordEncoder,
-        private var authenticationManager: AuthenticationManager,
-        private var userDetailsService: UserDetailsService,
-        private var jwtTokenUtil: JwtUtil,
-        @Qualifier("USER") private var ROLE_USER: Role
+        private val userRxRepository: UserRxRepository,
+        private val roleRxRepository: RoleRxRepository,
+        private val passwordEncoder: PasswordEncoder,
+        private val authenticationManager: AuthenticationManager,
+        private val userDetailsService: UserDetailsService,
+        private val jwtTokenUtil: JwtTokenUtil
 ) {
-    fun signupNewUser(userSignupRequest: UserSignupRequest): Mono<Unit> {
+    fun signupNewUser(userSignupRequest: UserSignupRequestDto): Mono<Unit> {
         return userRxRepository.existsByUsername(userSignupRequest.username)
-                .flatMap  { userExist ->
-                    if(userExist) throw UserAlreadyExistException()
-                    else userRxRepository.save(
-                            User(
-                                    username = userSignupRequest.username,
-                                    password = passwordEncoder.encode(userSignupRequest.password),
-                                    isActive = true,
-                                    role = ROLE_USER
-                            )
+                .map {
+                    if (it) throw UserAlreadyExistException()
+                    RoleType.USER.name
+                }
+                .flatMap(roleRxRepository::findByName)
+                .map {
+                    User(
+                            username = userSignupRequest.username,
+                            password = passwordEncoder.encode(userSignupRequest.password),
+                            isActive = true,
+                            role = it
                     )
                 }
+                .flatMap(userRxRepository::save)
     }
 
-    fun authenticateAndCreateToken(userSigninRequest: UserSigninRequest): Mono<TokenDto> {
+    fun authenticateAndCreateToken(userSigninRequest: UserSigninRequestDto): Mono<String> {
         try {
-            // TODO: 인증을 어떻게 하는지 잘 모르겠음. 잘못된 정보 전달 시 내가 예외처리 할 수 있는 방법
             authenticationManager.authenticate(
                     UsernamePasswordAuthenticationToken(
                             userSigninRequest.username,
                             userSigninRequest.password
                     )
             )
-        } catch (e: InternalAuthenticationServiceException) {
-            throw InvalidUserDataException()
-        } catch(e: BadCredentialsException) {
-            throw InvalidUserDataException()
+        } catch (e: Exception) {
+            when(e) {
+                is InternalAuthenticationServiceException,
+                is BadCredentialsException -> throw InvalidUserDataException()
+            }
         }
 
         val userDetails = userDetailsService
                 .loadUserByUsername(userSigninRequest.username)
-        val jwt = jwtTokenUtil.generateToken(userDetails)
+        val token = jwtTokenUtil.generateToken(userDetails)
 
-        return Mono.just(TokenDto(jwt))
+        return Mono.just(token)
     }
 }
