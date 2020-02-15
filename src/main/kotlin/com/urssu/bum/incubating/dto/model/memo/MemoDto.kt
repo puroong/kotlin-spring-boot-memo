@@ -9,7 +9,7 @@ class MemoDto(
         val content: String,
         val createdAt: Date,
         val isPublic: Boolean,
-        val tag: String,
+        val tag: String?,
         val owner: UserDto
 ) {
     constructor(memo: Memo): this(

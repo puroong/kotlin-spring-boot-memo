@@ -12,37 +12,19 @@ class ExceptionDto() {
     }
     val timestamp: Date = Date(System.currentTimeMillis())
 
-    constructor(e: Throwable) : this() {
-        when (e) {
-            is ApiException -> {
-                val apiException = e as ApiException
-                message = apiException.message
-                status = apiException.status
-            }
-            is org.springframework.security.access.AccessDeniedException -> {
-                val accessDeniedException = e as org.springframework.security.access.AccessDeniedException
-                message = accessDeniedException.message ?: HttpStatus.FORBIDDEN.reasonPhrase
-                status = HttpStatus.FORBIDDEN
-            }
-            else -> {
-                message = e.message ?: message
-            }
-        }
+    constructor(e: Exception) : this() {
+        message = e.message ?: message
+        status = HttpStatus.INTERNAL_SERVER_ERROR
+    }
+
+    constructor(e: ApiException) : this() {
+        message = e.reason ?: message
+        status = e.status
     }
 
     constructor(errorAttributes: MutableMap<String, Any>): this() {
         message = errorAttributes.get("message") as String
         status = HttpStatus.valueOf(errorAttributes.get("status") as Int)
-    }
-
-    fun create(e: Throwable): ExceptionDto {
-        return when (e) {
-            is ApiException -> {
-                ExceptionDto(e as ApiException)
-            }
-            is AccessDeniedException -> ExceptionDto()
-            else -> ExceptionDto(e)
-        }
     }
 
     fun toErrorAttribute(): MutableMap<String, Any> {

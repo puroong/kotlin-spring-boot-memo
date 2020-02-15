@@ -11,6 +11,7 @@ import io.jsonwebtoken.MalformedJwtException
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
@@ -24,46 +25,56 @@ class JwtRequestFilter @Autowired constructor(
         private val jwtUtil: JwtTokenUtil,
         private val securityProperty: SecurityProperty
 ) : OncePerRequestFilter() {
-    override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
-        val authorizationHeader = request.getHeader(SecurityConstant.HEADER_STRING)
-
-        var jwt: String? = null
-
-        if(authorizationHeader != null && authorizationHeader.startsWith(securityProperty.HEADER_PREFIX)) {
-            jwt = authorizationHeader.substring(securityProperty.HEADER_PREFIX.length)
+    private fun getToken(authorizationHeader: String?): String? {
+        if(authorizationHeader != null
+                && authorizationHeader.length > securityProperty.HEADER_PREFIX.length
+                && authorizationHeader.startsWith(securityProperty.HEADER_PREFIX)) {
+            return authorizationHeader.substring(securityProperty.HEADER_PREFIX.length)
         }
+        return null
+    }
+
+    private fun getUsernameFromToken(token: String): String {
+        try {
+            return jwtUtil.extractUsername(token)
+        } catch (e: Exception) {
+            when (e) {
+                is MalformedJwtException -> throw MalformedTokenException()
+                is ExpiredJwtException -> throw ExpiredTokenException()
+                else -> throw e
+            }
+        }
+    }
+
+    private fun validateToken(token: String, userDetails: UserDetails): Boolean {
+        try {
+            return jwtUtil.validateToken(token, userDetails)
+        } catch (e: Exception) {
+            when(e) {
+                is ExpiredJwtException -> throw ExpiredTokenException()
+                else -> throw e
+            }
+        }
+    }
+
+    private fun authorizeUser(request: HttpServletRequest, userDetails: UserDetails) {
+        val usernamePasswordAuthenticationToken = UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.authorities
+        )
+        usernamePasswordAuthenticationToken
+                .details = WebAuthenticationDetailsSource().buildDetails(request)
+        SecurityContextHolder.getContext().authentication = usernamePasswordAuthenticationToken
+    }
+
+    override fun doFilterInternal(request: HttpServletRequest, response: HttpServletResponse, filterChain: FilterChain) {
+
+        var jwt: String? = getToken(request.getHeader(SecurityConstant.HEADER_STRING))
 
         if (jwt != null && SecurityContextHolder.getContext().authentication == null) {
-            var username: String? = null
-            try {
-                username = jwtUtil.extractUsername(jwt)
-            } catch (e: Exception) {
-                when (e) {
-                    is MalformedJwtException -> throw MalformedTokenException()
-                    is ExpiredJwtException -> throw ExpiredTokenException()
-                    else -> throw e
-                }
-            }
+            var username: String = getUsernameFromToken(jwt)
             val userDetails = userDetailsService.loadUserByUsername(username)
 
-            var isValidToken = false
-            try {
-                isValidToken = jwtUtil.validateToken(jwt, userDetails)
-            } catch (e: Exception) {
-                when(e) {
-                    is ExpiredJwtException -> throw ExpiredTokenException()
-                    else -> throw e
-                }
-            }
-
-            if (isValidToken) {
-                val usernamePasswordAuthenticationToken = UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.authorities
-                )
-                usernamePasswordAuthenticationToken
-                        .details = WebAuthenticationDetailsSource().buildDetails(request)
-                SecurityContextHolder.getContext().authentication = usernamePasswordAuthenticationToken
-            }
+            if (validateToken(jwt, userDetails)) authorizeUser(request, userDetails)
         }
 
         filterChain.doFilter(request, response)

@@ -2,17 +2,16 @@ package com.urssu.bum.incubating.service
 
 import com.urssu.bum.incubating.dto.request.MemoCreateRequestDto
 import com.urssu.bum.incubating.dto.request.MemoUpdateRequestDto
+import com.urssu.bum.incubating.exception.InvalidArgumentException
 import com.urssu.bum.incubating.exception.MemoAlreadyDeletedException
 import com.urssu.bum.incubating.model.memo.Memo
 import com.urssu.bum.incubating.model.memo.MemoStatus
 import com.urssu.bum.incubating.repository.memo.MemoRxRepository
 import com.urssu.bum.incubating.repository.user.UserRxRepository
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
-import org.springframework.web.server.ResponseStatusException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
@@ -37,7 +36,7 @@ class MemoService @Autowired constructor(
                 .flatMap(memoRxRepository::save)
     }
 
-    fun getPublicMemos(tag: String?, limit: Int?, offset: Long?): Flux<Memo> {
+    fun getPublicMemos(tag: String?, limit: Int?, offset: Int?): Flux<Memo> {
         /*
         경우의 수는 아래와 같음
 
@@ -53,14 +52,14 @@ class MemoService @Autowired constructor(
         else if (tag != null && limit == null && offset == null) return getPublicMemos(tag)
         else if (tag == null && limit != null && offset != null) return getPublicMemos(limit, offset)
         else if (tag != null && limit != null && offset != null) return getPublicMemos(tag, limit, offset)
-        else throw ResponseStatusException(HttpStatus.BAD_REQUEST)
+        else return Flux.error(InvalidArgumentException())
     }
 
     private fun getPublicMemos(): Flux<Memo> {
         return memoRxRepository.findAllByIsPublicAndStatusOrderByCreatedAtDesc(true, MemoStatus.PUBLISHED)
     }
 
-    private fun getPublicMemos(limit: Int, offset: Long): Flux<Memo> {
+    private fun getPublicMemos(limit: Int, offset: Int): Flux<Memo> {
         return memoRxRepository.findAllByIsPublicAndStatusOrderByCreatedAtDesc(true, MemoStatus.PUBLISHED, limit, offset)
     }
 
@@ -68,11 +67,11 @@ class MemoService @Autowired constructor(
         return memoRxRepository.findAllByIsPublicAndStatusAndTagOrderByCreatedAtDesc(true, MemoStatus.PUBLISHED, tag)
     }
 
-    private fun getPublicMemos(tag: String, limit: Int, offset: Long): Flux<Memo> {
+    private fun getPublicMemos(tag: String, limit: Int, offset: Int): Flux<Memo> {
         return memoRxRepository.findAllByIsPublicAndStatusAndTagOrderByCreatedAtDesc(true, MemoStatus.PUBLISHED, tag, limit, offset)
     }
 
-    fun getPublishedMemos(username: String, tag: String?, limit: Int?, offset: Long?): Flux<Memo> {
+    fun getPublishedMemos(username: String, tag: String?, limit: Int?, offset: Int?): Flux<Memo> {
         /*
         경우의 수는 아래와 같음
 
@@ -88,7 +87,7 @@ class MemoService @Autowired constructor(
         else if (tag != null && limit == null && offset == null) return getPublishedMemosByUsernameAndTag(username, tag)
         else if (tag == null && limit != null && offset != null) return getPublishedMemosByUsername(username, limit, offset)
         else if (tag != null && limit != null && offset != null) return getPublishedMemosByUsernameAndTag(username, tag, limit, offset)
-        else throw ResponseStatusException(HttpStatus.BAD_REQUEST)
+        else return Flux.error(InvalidArgumentException())
     }
 
     private fun getPublishedMemosByUsernameAndTag(username: String, tag: String): Flux<Memo> {
@@ -96,7 +95,7 @@ class MemoService @Autowired constructor(
                 .flatMapMany { memoRxRepository.findAllByOwnerAndTagAndStatusOrderByCreatedAtDesc(it, tag, MemoStatus.PUBLISHED) }
     }
 
-    private fun getPublishedMemosByUsernameAndTag(username: String, tag: String, limit: Int, offset: Long): Flux<Memo> {
+    private fun getPublishedMemosByUsernameAndTag(username: String, tag: String, limit: Int, offset: Int): Flux<Memo> {
         return userRxRepository.findByUsernameIfExist(username)
                 .flatMapMany { memoRxRepository.findAllByOwnerAndTagAndStatusOrderByCreatedAtDesc(it, tag, MemoStatus.PUBLISHED, limit, offset) }
     }
@@ -106,7 +105,7 @@ class MemoService @Autowired constructor(
                 .flatMapMany { memoRxRepository.findAllByOwnerAndStatusOrderByCreatedAtDesc(it, MemoStatus.PUBLISHED) }
     }
 
-    private fun getPublishedMemosByUsername(username: String, limit: Int, offset: Long): Flux<Memo> {
+    private fun getPublishedMemosByUsername(username: String, limit: Int, offset: Int): Flux<Memo> {
         return userRxRepository.findByUsernameIfExist(username)
                 .flatMapMany { memoRxRepository.findAllByOwnerAndStatusOrderByCreatedAtDesc(it, MemoStatus.PUBLISHED, limit, offset) }
     }

@@ -1,13 +1,18 @@
 package com.urssu.bum.incubating.security.service
 
+import com.urssu.bum.incubating.exception.MemoNotFoundException
+import com.urssu.bum.incubating.exception.UnauthorizedUserException
 import com.urssu.bum.incubating.model.user.Permission
 import com.urssu.bum.incubating.model.user.PermissionType
 import com.urssu.bum.incubating.repository.memo.MemoRepository
 import com.urssu.bum.incubating.security.SecurityProperty
 import com.urssu.bum.incubating.security.util.JwtTokenUtil
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.http.HttpStatus
+import org.springframework.security.authentication.AnonymousAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 
 @Service
 class PermissionService @Autowired constructor(
@@ -15,20 +20,36 @@ class PermissionService @Autowired constructor(
         private val jwtUtil: JwtTokenUtil,
         private val securityProperty: SecurityProperty
 ) {
+    private fun invalidAuthorization(authorization: String): Boolean {
+        return authorization.length <= securityProperty.HEADER_PREFIX.length
+    }
+
+    private fun isAnonymousUser(): Boolean {
+        return SecurityContextHolder.getContext().authentication is AnonymousAuthenticationToken
+    }
+
     private fun isCurrentUser(username: String): Boolean {
+        if(isAnonymousUser()) throw UnauthorizedUserException()
         return SecurityContextHolder.getContext().authentication.name == username
     }
 
     private fun isCurrentUser(authorization: String, memoId: Long): Boolean {
+        if(invalidAuthorization(authorization)) throw UnauthorizedUserException()
+
         val token = authorization.substring(securityProperty.HEADER_PREFIX.length)
 
         val usernameFromToken = jwtUtil.extractUsername(token)
-        var memoOwnername = memoRepository.getOne(memoId).owner.username
+        var memoOwnername: String? = null
+
+        if (memoRepository.existsById(memoId)) memoOwnername = memoRepository.getOne(memoId).owner.username
+        else throw MemoNotFoundException()
 
         return memoOwnername == usernameFromToken
     }
 
     private fun hasPermission(permissionType: PermissionType): Boolean {
+        if(isAnonymousUser()) throw UnauthorizedUserException()
+
         val userAuthorities = SecurityContextHolder.getContext().authentication.authorities
                 .map { authority ->
                     (authority as Permission).name

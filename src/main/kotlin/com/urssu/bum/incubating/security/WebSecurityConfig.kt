@@ -1,6 +1,5 @@
 package com.urssu.bum.incubating.security
 
-import com.urssu.bum.incubating.security.filter.ExceptionHandlerFilter
 import com.urssu.bum.incubating.security.filter.JwtRequestFilter
 import com.urssu.bum.incubating.security.service.CustomUserDeatilsService
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,7 +20,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 class WebSecurityConfig @Autowired constructor(
         private val myUserDetailsService: CustomUserDeatilsService,
         private val jwtRequestFilter: JwtRequestFilter,
-        private val exceptionHandlerFilter: ExceptionHandlerFilter,
         private val passwordEncoder: PasswordEncoder
 ) : WebSecurityConfigurerAdapter() {
     override fun configure(auth: AuthenticationManagerBuilder) {
@@ -36,12 +34,9 @@ class WebSecurityConfig @Autowired constructor(
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                .antMatchers("/**/signin").permitAll()
-                .antMatchers("/**/signup").permitAll()
-                .anyRequest().authenticated()
+                .anyRequest().permitAll()
                 .and()
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter::class.java)
-                .addFilterBefore(exceptionHandlerFilter, JwtRequestFilter::class.java)
     }
 
     override fun configure(web: WebSecurity) {

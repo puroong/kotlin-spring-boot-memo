@@ -23,6 +23,6 @@ interface MemoRepository : JpaRepository<Memo, Long> {
     fun findAllByIsPublicAndStatusAndTagOrderByCreatedAtDesc(isPublic: Boolean, status: MemoStatus, tag: String): List<Memo>
     fun findAllByIsPublicAndStatusAndTagOrderByCreatedAtDesc(isPublic: Boolean, status: MemoStatus, tag: String, pageable: Pageable): List<Memo>
 
-    @Query("SELECT DISTINCT tag FROM Memo")
+    @Query("SELECT DISTINCT tag FROM Memo m where m.tag!=null")
     fun findDistinctTags(pageable: Pageable): List<String>
 }

@@ -4,5 +4,5 @@ class MemoUpdateRequestDto(
         val title: String,
         val content: String,
         val isPublic: Boolean,
-        val tag: String
+        val tag: String?
 )

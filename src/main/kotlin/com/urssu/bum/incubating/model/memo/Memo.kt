@@ -12,7 +12,7 @@ class Memo(
         @Column(name = "content", nullable = false) var content: String,
         @Column(name = "created_at", nullable = false) val createdAt: Date = Date(System.currentTimeMillis()),
         @Column(name = "is_public", nullable = false) var isPublic: Boolean = true,
-        @Column(name = "tag", nullable = false) var tag: String = "",
+        @Column(name = "tag") var tag: String?,
         @ManyToOne val owner: User,
         @Column(name = "status", nullable = false) @Enumerated(EnumType.STRING) var status: MemoStatus = MemoStatus.PUBLISHED
 ) {
@@ -20,7 +20,7 @@ class Memo(
             title: String = this.title,
             content: String = this.content,
             isPublic: Boolean = this.isPublic,
-            tag: String = this.tag,
+            tag: String? = this.tag,
             status: MemoStatus = this.status
     ) {
         this.title = title

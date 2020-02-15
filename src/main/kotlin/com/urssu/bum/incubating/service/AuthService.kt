@@ -57,7 +57,7 @@ class AuthService @Autowired constructor(
         } catch (e: Exception) {
             when(e) {
                 is InternalAuthenticationServiceException,
-                is BadCredentialsException -> throw InvalidUserDataException()
+                is BadCredentialsException -> return Mono.error(InvalidUserDataException())
             }
         }
 
